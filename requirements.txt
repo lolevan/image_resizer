@@ -7,3 +7,4 @@ pydantic
 python-multipart
 fastapi-cors
 SQLAlchemy
+psycopg2-binary

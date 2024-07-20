@@ -1,6 +1,11 @@
 from celery import Celery
+
 from .services import process_image
+
 import logging
+
+import os
+
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
@@ -11,11 +16,15 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+# Конфигурация Celery
+REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6380/0')
+
 celery = Celery(
     'tasks',
-    broker='redis://localhost:6379/0',
-    backend='redis://localhost:6379/0',
+    broker=REDIS_URL,
+    backend=REDIS_URL,
 )
+
 
 @celery.task
 def process_image_task(input_path, output_path, width, height, quality, watermark_path, position, transparency):
