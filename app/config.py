@@ -1,5 +1,13 @@
 import os
+
 from celery import Celery
+
+from sqlalchemy.orm import Session
+
+from .models import APIKey
+
+from .dependencies import get_db
+
 
 # Настройки Redis и Celery
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
@@ -18,13 +26,8 @@ celery_app.conf.update(
     enable_utc=True,
 )
 
-# Настройки API-ключей
-API_KEYS = {
-    "testkey": "user1",
-    "examplekey": "user2",
-}
-
 
 # Функция для проверки API-ключа
-def validate_api_key(api_key: str) -> bool:
-    return api_key in API_KEYS
+def validate_api_key(api_key: str, db: Session) -> bool:
+    db_key = db.query(APIKey).filter(APIKey.key == api_key).first()
+    return db_key is not None
