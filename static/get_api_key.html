@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get API Key</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Get API Key</h1>
+        <a href="/" class="btn btn-secondary mb-4">Back to Home</a>
+        <form id="api-key-form">
+            <div class="form-group">
+                <label for="user">User Name:</label>
+                <input type="text" class="form-control" id="user" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Get API Key</button>
+        </form>
+        <div id="response" class="mt-4"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#api-key-form').on('submit', function(e) {
+                e.preventDefault();
+
+                var user = $('#user').val();
+
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/create_key/',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ user: user }),
+                    success: function(response) {
+                        $('#response').html('<div class="alert alert-success">Your API key: ' + response.api_key + '</div>');
+                    },
+                    error: function(response) {
+                        var errorMessage = response.responseJSON ? response.responseJSON.detail : 'Unknown error';
+                        $('#response').html('<div class="alert alert-danger">Error: ' + errorMessage + '</div>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
