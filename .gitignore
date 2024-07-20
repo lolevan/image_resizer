@@ -31,3 +31,7 @@ archive.zip
 temp/*
 
 image_processing.log
+
+.idea
+dump.rdb
+api.log

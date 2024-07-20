@@ -14,30 +14,40 @@ logger.addHandler(handler)
 
 
 def process_image(input_path, output_path, width, height, quality, watermark_path, position, transparency):
+    """
+    Обрабатывает изображение: изменяет размер, сжимает и добавляет водяной знак.
+    """
     try:
         with Image.open(input_path) as img:
             logger.info(f"Original image size: {img.size}")
+            # Обработка анимированного GIF
             if img.format == 'GIF' and img.is_animated:
                 frames = []
                 for frame in ImageSequence.Iterator(img):
                     frame = frame.convert("RGBA")
                     frame = process_single_frame(frame, width, height, watermark_path, position, transparency)
                     frames.append(frame)
-
+                # Сохранение обработанных кадров GIF
                 frames[0].save(output_path, save_all=True, append_images=frames[1:], loop=0)
             else:
+                # Обработка статического изображения
                 img = process_single_frame(img, width, height, watermark_path, position, transparency)
                 img.save(output_path, quality=quality)
             logger.info(f"Saved processed image to {output_path}")
     except Exception as e:
         logger.error(f"Error processing image: {str(e)}")
     finally:
+        # Удаление временных файлов
         os.remove(input_path)
         if watermark_path:
             os.remove(watermark_path)
 
 
 def process_single_frame(frame, width, height, watermark_path, position, transparency):
+    """
+    Обрабатывает один кадр изображения: изменяет размер, сжимает и добавляет водяной знак.
+    """
+    # Изменение размера изображения
     if width and height:
         frame = frame.resize((width, height), Image.Resampling.LANCZOS)
     elif width:
@@ -51,6 +61,7 @@ def process_single_frame(frame, width, height, watermark_path, position, transpa
 
     logger.info(f"Resized image size: {frame.size}")
 
+    # Добавление водяного знака
     if watermark_path:
         with Image.open(watermark_path) as watermark:
             logger.info(f"Original watermark size: {watermark.size}")
@@ -61,6 +72,7 @@ def process_single_frame(frame, width, height, watermark_path, position, transpa
                 watermark = watermark.resize(new_size, Image.Resampling.LANCZOS)
             logger.info(f"Resized watermark size: {watermark.size}")
 
+            # Применение прозрачности водяного знака
             if transparency < 255:
                 alpha = watermark.split()[3]
                 alpha = ImageEnhance.Brightness(alpha).enhance(transparency / 255.0)
@@ -74,6 +86,9 @@ def process_single_frame(frame, width, height, watermark_path, position, transpa
 
 
 def calculate_watermark_position(image_size, watermark_size, position):
+    """
+    Вычисляет позицию водяного знака на изображении.
+    """
     image_width, image_height = image_size
     watermark_width, watermark_height = watermark_size
 
