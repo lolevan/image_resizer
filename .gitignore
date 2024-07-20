@@ -27,3 +27,7 @@ archive.zip
 
 # macOS
 .DS_Store
+
+temp/*
+
+image_processing.log
