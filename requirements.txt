@@ -5,3 +5,5 @@ celery
 redis
 pydantic
 python-multipart
+fastapi-cors
+

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Resizer API</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Image Resizer API</h1>
+        <form id="image-form">
+            <div class="form-group">
+                <label for="api-key">API Key:</label>
+                <input type="text" class="form-control" id="api-key" required>
+            </div>
+            <div class="form-group">
+                <label for="image">Select image:</label>
+                <input type="file" class="form-control-file" id="image" required>
+            </div>
+            <div class="form-group">
+                <label for="width">Width:</label>
+                <input type="number" class="form-control" id="width">
+            </div>
+            <div class="form-group">
+                <label for="height">Height:</label>
+                <input type="number" class="form-control" id="height">
+            </div>
+            <div class="form-group">
+                <label for="quality">Quality (1-100):</label>
+                <input type="number" class="form-control" id="quality" value="85">
+            </div>
+            <div class="form-group">
+                <label for="watermark">Watermark:</label>
+                <input type="file" class="form-control-file" id="watermark">
+            </div>
+            <div class="form-group">
+                <label for="position">Position:</label>
+                <select class="form-control" id="position">
+                    <option value="center">Center</option>
+                    <option value="top_left">Top Left</option>
+                    <option value="top_right">Top Right</option>
+                    <option value="bottom_left">Bottom Left</option>
+                    <option value="bottom_right">Bottom Right</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="transparency">Transparency (0-255):</label>
+                <input type="number" class="form-control" id="transparency" value="128">
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+        <div id="response" class="mt-4"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#image-form').on('submit', function(e) {
+                e.preventDefault();
+
+                var formData = new FormData();
+                formData.append('image', $('#image')[0].files[0]);
+                formData.append('width', $('#width').val());
+                formData.append('height', $('#height').val());
+                formData.append('quality', $('#quality').val());
+                formData.append('watermark', $('#watermark')[0].files[0]);
+                formData.append('position', $('#position').val());
+                formData.append('transparency', $('#transparency').val());
+
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/process_image/',
+                    type: 'POST',
+                    headers: {
+                        'Authorization': $('#api-key').val()
+                    },
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        var imageUrl = 'http://127.0.0.1:8000/temp/processed_' + response.image_id + '_' + $('#image')[0].files[0].name;
+                        $('#response').html('<div class="alert alert-success">Image processing started. <a href="' + imageUrl + '" download>Click here to download the processed image</a></div>');
+                    },
+                    error: function(response) {
+                        var errorMessage = response.responseJSON ? response.responseJSON.detail : 'Unknown error';
+                        $('#response').html('<div class="alert alert-danger">Error: ' + errorMessage + '</div>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
