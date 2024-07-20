@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 from .tasks import process_image_task
+from .enums import WatermarkPosition
 import shutil
 import os
 import uuid
@@ -17,7 +18,7 @@ async def resize_image(
     height: int = Form(None),
     quality: int = Form(85),
     watermark: UploadFile = File(None),
-    position: str = Form("center"),
+    position: WatermarkPosition = Form(WatermarkPosition.center),
     transparency: int = Form(128)
 ):
     try:
@@ -34,7 +35,7 @@ async def resize_image(
                 shutil.copyfileobj(watermark.file, buffer)
 
         output_path = os.path.join(TEMP_DIR, f"processed_{image_id}_{image.filename}")
-        process_image_task.delay(temp_image_path, output_path, width, height, quality, watermark_path, position, transparency)
+        process_image_task.delay(temp_image_path, output_path, width, height, quality, watermark_path, position.value, transparency)
         return JSONResponse(content={"message": "Image processing started", "image_id": image_id}, status_code=202)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

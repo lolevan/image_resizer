@@ -1,6 +1,7 @@
 from PIL import Image, ImageEnhance, ImageSequence
 import os
 import logging
+from .enums import WatermarkPosition
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
@@ -66,12 +67,26 @@ def process_single_frame(frame, width, height, watermark_path, position, transpa
                 watermark.putalpha(alpha)
 
             # Позиционирование водяного знака
-            if position == 'center':
-                position = (
-                    (frame.size[0] - watermark.size[0]) // 2,
-                    (frame.size[1] - watermark.size[1]) // 2
-                )
-
+            position = calculate_watermark_position(frame.size, watermark.size, position)
             frame.paste(watermark, position, watermark)
 
     return frame
+
+
+def calculate_watermark_position(image_size, watermark_size, position):
+    image_width, image_height = image_size
+    watermark_width, watermark_height = watermark_size
+
+    if position == 'center':
+        return (image_width - watermark_width) // 2, (image_height - watermark_height) // 2
+    elif position == 'top_left':
+        return 0, 0
+    elif position == 'top_right':
+        return image_width - watermark_width, 0
+    elif position == 'bottom_left':
+        return 0, image_height - watermark_height
+    elif position == 'bottom_right':
+        return image_width - watermark_width, image_height - watermark_height
+    else:
+        # По умолчанию центр
+        return (image_width - watermark_width) // 2, (image_height - watermark_height) // 2
